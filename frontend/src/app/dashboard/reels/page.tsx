@@ -5,7 +5,13 @@ import { supabase } from "@/lib/supabase";
 import { useEffect, useState } from "react";
 
 export default function ReelsPage() {
-    const [data, setData] = useState<any[] | null>(null);
+    type Reel = {
+        id: number;
+        company: string;
+        // Add other fields from your yt_shorts_pending table as needed
+        [key: string]: unknown;
+    };
+    const [data, setData] = useState<Reel[] | null>(null);
     useEffect(() => {
         const fetchData = async () => {
             const shop_name = localStorage.getItem("shop_name");

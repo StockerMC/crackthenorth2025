@@ -91,7 +91,7 @@ export default function YouTubeReels({ reelsData, className }: YouTubeReelsProps
                         className="w-64 h-64 object-contain mb-8"
                     />
                     <h1 className="text-3xl font-bold text-gray-800 mb-4">
-                        That's all for now, working hard to find more content...
+                        That&apos;s all for now, working hard to find more content...
                     </h1>
                 </div>
             ) : (

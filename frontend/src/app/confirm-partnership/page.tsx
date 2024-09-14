@@ -8,7 +8,13 @@ export default function ConfirmPartnershipPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const partnershipId = searchParams.get('id');
-  const [partnership, setPartnership] = useState<any>(null);
+  type Partnership = {
+    company: { shop_name: string };
+    short: { title: string };
+    status: string;
+  };
+
+  const [partnership, setPartnership] = useState<Partnership | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
