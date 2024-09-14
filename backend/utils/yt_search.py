@@ -38,15 +38,22 @@ async def fetch_top_shorts(keyword: str, max_results: int = 5, relevance_languag
     for item in response.get("items", []):
         video_id = item["id"]["videoId"]
         snippet = item["snippet"]
+        channel_id = snippet["channelId"]
+        
+        # Get channel email for this video
+        email = await get_channel_email(channel_id)
+        
         videos.append({
             "id": video_id,
+            "short_id": video_id,
             "url": f"https://www.youtube.com/watch?v={video_id}",
             "title": snippet["title"],
             "description": snippet["description"],
             "thumbnail": snippet["thumbnails"]["high"]["url"],
             "channelTitle": snippet["channelTitle"],
-            "channelId": snippet["channelId"],
+            "channel_id": channel_id,
             "publishedAt": snippet["publishedAt"],
+            "email": email,
         })
 
     return videos

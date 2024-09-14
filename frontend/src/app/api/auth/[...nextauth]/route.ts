@@ -1,9 +1,10 @@
 import NextAuth, { type NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import { JWT } from "next-auth/jwt";
-import { upsertCreatorTokens } from "@/lib/supabaseAdmin";
+import { upsertCreatorTokens, createPartnership } from "@/lib/supabaseAdmin";
+import { getChannelIdFromRequest } from "@/lib/channelStorage";
 
-async function refreshAccessToken(token: JWT): Promise<JWT> {
+async function refreshAccessToken(token: JWT, req?: Request): Promise<JWT> {
     try {
         if (!token.refreshToken) {
             console.error("[Token Refresh] No refresh token available");
@@ -31,13 +32,21 @@ async function refreshAccessToken(token: JWT): Promise<JWT> {
             throw refreshedTokens;
         }
 
-        await upsertCreatorTokens({
-            channelId: token.channelId as string,
-            email: token.email as string,
-            accessToken: refreshedTokens.access_token,
-            refreshToken: token.refreshToken as string,
-            expiresAt: new Date(Date.now() + refreshedTokens.expires_in * 1000),
-        });
+        // Get channelId from token or request cookies
+        let channelId = token.channelId as string | undefined;
+        if (!channelId && req) {
+            channelId = getChannelIdFromRequest(req) || undefined;
+        }
+
+        if (channelId) {
+            await upsertCreatorTokens({
+                channelId,
+                email: token.email as string,
+                accessToken: refreshedTokens.access_token,
+                refreshToken: token.refreshToken as string,
+                expiresAt: new Date(Date.now() + refreshedTokens.expires_in * 1000),
+            });
+        }
 
         return {
             ...token,
@@ -57,7 +66,7 @@ async function refreshAccessToken(token: JWT): Promise<JWT> {
 const COOKIES_LIFE_TIME = 24 * 60 * 60; // 24 hours in seconds
 const COOKIE_PREFIX = process.env.NODE_ENV === 'production' ? '__Secure-' : '';
 
-const authOptions: NextAuthOptions = {
+export const authOptions: NextAuthOptions = {
     providers: [
         GoogleProvider({
             clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -87,8 +96,6 @@ const authOptions: NextAuthOptions = {
 
             // Initial sign in
             if (account && user) {
-                // Access cookies from the request
-                // const cookies = request?.cookies as { get: (name: string) => { value: string } | undefined };
                 console.log("[JWT Callback] Initial sign in:", {
                     hasAccess: !!account.access_token,
                     hasRefresh: !!account.refresh_token,
@@ -99,21 +106,55 @@ const authOptions: NextAuthOptions = {
                     return { ...token, error: "MissingTokens" };
                 }
 
-                // Get and decode the state parameter
-                const stateParam = account.state as string;
+                // Try to get channelId from state first, then from stored cookie
                 let channelId: string | undefined;
+                let companyId: string | undefined;
+                let shortId: string | undefined;
+                let shopName: string | undefined;
                 
+                // Try to get from state parameter
                 try {
-                    const stateData = JSON.parse(atob(stateParam));
-                    channelId = stateData.channelId;
-                    console.log("[JWT Callback] Decoded state data:", stateData);
+                    const stateParam = account.state as string;
+                    if (stateParam) {
+                        const stateData = JSON.parse(atob(stateParam));
+                        channelId = stateData.channelId;
+                        companyId = stateData.companyId;
+                        shortId = stateData.shortId;
+                        shopName = stateData.shop_name;
+                        console.log("[JWT Callback] Decoded state data:", stateData);
+                    }
                 } catch (error) {
-                    console.error("[JWT Callback] Error decoding state:", error);
+                    console.log("[JWT Callback] No state or error decoding state:", error);
                 }
 
+                // If no channelId from state, try to get from stored cookie/localStorage
+                // This would be set by our /connect page
                 if (!channelId) {
-                    console.error("[JWT Callback] No channelId in state");
-                    throw new Error("No channelId found in state");
+                    // This will need to be passed through the request context
+                    console.log("[JWT Callback] No channelId in state, should be available from cookie");
+                }
+
+                // If shop_name is present, this is a company sign-in, skip creator logic
+                if (shopName) {
+                    console.log("[JWT Callback] Company sign-in detected, skipping creator token logic");
+                    return {
+                        ...token,
+                        userType: 'company',
+                        shopName,
+                    } as JWT;
+                }
+
+                // For creator sign-in, channelId is required
+                if (!channelId) {
+                    console.error("[JWT Callback] No channelId available for creator sign-in");
+                    // Don't throw error, let it proceed without creator-specific logic
+                    return {
+                        ...token,
+                        accessToken: account.access_token,
+                        refreshToken: account.refresh_token,
+                        expiresAt: account.expires_at ? account.expires_at * 1000 : Date.now() + 3600 * 1000,
+                        userType: 'creator',
+                    } as JWT;
                 }
 
                 // --- Token expiry ---
@@ -122,7 +163,7 @@ const authOptions: NextAuthOptions = {
                     : Date.now() + 3600 * 1000;
 
                 // --- Save to Supabase with the channelId ---
-                await upsertCreatorTokens({
+                const creatorData = await upsertCreatorTokens({
                     channelId,
                     email: user.email!,
                     accessToken: account.access_token,
@@ -130,13 +171,30 @@ const authOptions: NextAuthOptions = {
                     expiresAt: new Date(tokenExpiry),
                 });
 
+                let partnershipId: string | undefined;
+                if (companyId && shortId && creatorData?.id) {
+                    const partnership = await createPartnership({
+                        creatorId: creatorData.id,
+                        companyId,
+                        shortId,
+                    });
+                    partnershipId = partnership.id;
+                }
+
                 return {
                     ...token,
                     accessToken: account.access_token,
                     refreshToken: account.refresh_token,
                     channelId,
                     expiresAt: tokenExpiry,
+                    partnershipId,
+                    userType: 'creator',
                 } as JWT;
+            }
+
+            // Skip refresh logic for companies
+            if (token.userType === 'company') {
+                return token;
             }
 
             // Refresh if expired
@@ -153,36 +211,50 @@ const authOptions: NextAuthOptions = {
         },
         async session({ session, token }) {
             if (token) {
+                session.user.id = token.userId as string;
                 session.user.channelId = token.channelId as string;
                 session.accessToken = token.accessToken as string;
                 session.error = token.error;
+                session.partnershipId = token.partnershipId as string | undefined;
+                session.userType = token.userType as string;
+                session.shopName = token.shopName as string | undefined;
             }
             return session;
         },
-        async redirect({ url, baseUrl }) {
-            console.log("[Redirect Callback]", {
-                url,
-                baseUrl,
-                fullUrl: new URL(url, baseUrl).toString()
-            });
+            async redirect({ url, baseUrl }) {
+                const urlObj = new URL(url, baseUrl);
+                const partnershipId = urlObj.searchParams.get('partnershipId');
 
-            // Always allow OAuth callback URLs
-            if (url.startsWith('/api/auth/callback')) {
-                console.log("[Redirect Callback] Allowing callback URL:", url);
-                return url;
-            }
+                if (partnershipId) {
+                    return `${baseUrl}/partnership-prompt?id=${partnershipId}`;
+                }
 
-            // Preserve state parameter for callbacks
-            if (url.includes('/auth/callback/google')) {
-                console.log("[Redirect Callback] Preserving state in callback");
-                return url;
-            }
-
-            // For all other URLs, redirect to dashboard
-            const finalUrl = `${baseUrl}/dashboard`;
-            console.log("[Redirect Callback] Redirecting to dashboard:", finalUrl);
-            return finalUrl;
-        },
+                // Check if this is a company sign-in by looking at the URL state
+                try {
+                    const stateParam = urlObj.searchParams.get('state');
+                    if (stateParam) {
+                        const stateData = JSON.parse(atob(stateParam));
+                        if (stateData.shop_name) {
+                            return `${baseUrl}/stores`;
+                        }
+                        // If there's partnership data in state, check if partnership was created
+                        if (stateData.channelId && stateData.companyId && stateData.shortId) {
+                            // The JWT callback will create the partnership
+                            // We need to get the partnership ID from the session/token somehow
+                            // For now, we'll create a temporary solution by checking the database
+                            // This is not ideal but works for the current flow
+                            return `${baseUrl}/dashboard`;
+                        }
+                    }
+                } catch (error) {
+                    console.error("[Redirect Callback] Error parsing state:", error);
+                }
+    
+                // For all other URLs, redirect to dashboard
+                const finalUrl = `${baseUrl}/dashboard`;
+                console.log("[Redirect Callback] Redirecting to dashboard:", finalUrl);
+                return finalUrl;
+            },
     },
     pages: {
         signIn: "/creators",
@@ -246,52 +318,24 @@ const authOptions: NextAuthOptions = {
     },
 };
 
-// Create handler with request logging
-async function logRequest(req: Request) {
-    try {
-        console.log('[NextAuth] Incoming request:', {
-            method: req.method,
-            url: req.url,
-            headers: Object.fromEntries(req.headers.entries())
-        });
+// Store request in a context that can be accessed by callbacks
+let currentRequest: Request | null = null;
 
-        const clonedReq = req.clone();
-        const body = await clonedReq.text();
-        if (body) {
-            console.log('[NextAuth] Request body:', body);
-            try {
-                const jsonBody = JSON.parse(body);
-                console.log('[NextAuth] Parsed JSON body:', jsonBody);
-            } catch (e) {
-                console.log('[NextAuth] Body is not JSON');
-            }
-        }
-    } catch (error) {
-        console.error('[NextAuth] Error reading request:', error);
-    }
-}
-
-const handler = async (req: Request, context: unknown ) => {
-    await logRequest(req);
+const handler = async (req: Request, context: any) => {
+    // Store the current request for access in callbacks
+    currentRequest = req;
     
-    // Get channelId from cookie
-    const cookieHeader = req.headers.get('cookie');
-    const channelId = cookieHeader?.split(';')
-        .map(c => c.trim())
-        .find(c => c.startsWith('youtube_channel_id='))
-        ?.split('=')[1];
-        
-    console.log("[NextAuth Handler] ChannelId from cookie:", channelId);
-
+    // Get channelId from cookie for logging
+    const cookieChannelId = getChannelIdFromRequest(req);
+    console.log("[NextAuth Handler] ChannelId from cookie:", cookieChannelId);
+    
     return NextAuth({
         ...authOptions,
         callbacks: {
             ...authOptions.callbacks,
-            async jwt({ token, user, account }) {
+            async jwt({ token, user, account, trigger }) {
                 console.log("[JWT Callback] account:", account ? "present" : "missing");
-                console.log(user);
-                console.log(account);
-
+                
                 // Initial sign in
                 if (account && user) {
                     console.log("[JWT Callback] Initial sign in:", {
@@ -304,9 +348,54 @@ const handler = async (req: Request, context: unknown ) => {
                         return { ...token, error: "MissingTokens" };
                     }
 
+                    // Try to get channelId from state first, then from stored cookie
+                    let channelId: string | undefined;
+                    let companyId: string | undefined;
+                    let shortId: string | undefined;
+                    let shopName: string | undefined;
+                    
+                    // Try to get from state parameter
+                    try {
+                        const stateParam = account.state as string;
+                        if (stateParam) {
+                            const stateData = JSON.parse(atob(stateParam));
+                            channelId = stateData.channelId;
+                            companyId = stateData.companyId;
+                            shortId = stateData.shortId;
+                            shopName = stateData.shop_name;
+                            console.log("[JWT Callback] Decoded state data:", stateData);
+                        }
+                    } catch (error) {
+                        console.log("[JWT Callback] No state or error decoding state:", error);
+                    }
+
+                    // If no channelId from state, try to get from stored cookie
+                    if (!channelId && currentRequest) {
+                        channelId = getChannelIdFromRequest(currentRequest) || undefined;
+                        console.log("[JWT Callback] Retrieved channelId from cookie:", channelId);
+                    }
+
+                    // If shop_name is present, this is a company sign-in, skip creator logic
+                    if (shopName) {
+                        console.log("[JWT Callback] Company sign-in detected, skipping creator token logic");
+                        return {
+                            ...token,
+                            userType: 'company',
+                            shopName,
+                        } as JWT;
+                    }
+
+                    // For creator sign-in, channelId is required
                     if (!channelId) {
-                        console.error("[JWT Callback] No channelId in cookie");
-                        throw new Error("No channelId found in cookie");
+                        console.error("[JWT Callback] No channelId available for creator sign-in");
+                        // Don't throw error, let it proceed without creator-specific logic
+                        return {
+                            ...token,
+                            accessToken: account.access_token,
+                            refreshToken: account.refresh_token,
+                            expiresAt: account.expires_at ? account.expires_at * 1000 : Date.now() + 3600 * 1000,
+                            userType: 'creator',
+                        } as JWT;
                     }
 
                     // --- Token expiry ---
@@ -315,7 +404,7 @@ const handler = async (req: Request, context: unknown ) => {
                         : Date.now() + 3600 * 1000;
 
                     // --- Save to Supabase with the channelId ---
-                    await upsertCreatorTokens({
+                    const creatorData = await upsertCreatorTokens({
                         channelId,
                         email: user.email!,
                         accessToken: account.access_token,
@@ -323,13 +412,31 @@ const handler = async (req: Request, context: unknown ) => {
                         expiresAt: new Date(tokenExpiry),
                     });
 
+                    let partnershipId: string | undefined;
+                    if (companyId && shortId && creatorData?.id) {
+                        const partnership = await createPartnership({
+                            creatorId: creatorData.id,
+                            companyId,
+                            shortId,
+                        });
+                        partnershipId = partnership.id;
+                    }
+
                     return {
                         ...token,
                         accessToken: account.access_token,
                         refreshToken: account.refresh_token,
                         channelId,
                         expiresAt: tokenExpiry,
+                        partnershipId,
+                        userType: 'creator',
+                        userId: creatorData?.id,
                     } as JWT;
+                }
+
+                // Skip refresh logic for companies
+                if (token.userType === 'company') {
+                    return token;
                 }
 
                 // Refresh if expired
@@ -338,17 +445,11 @@ const handler = async (req: Request, context: unknown ) => {
                 }
                 if (token.accessToken && token.refreshToken) {
                     console.log("[JWT Callback] Access token expired, attempting refresh");
-                    return refreshAccessToken(token);
+                    return refreshAccessToken(token, currentRequest || undefined);
                 }
 
                 console.warn("[JWT Callback] Missing tokens, returning unchanged token");
                 return token;
-            },
-            async session(params) {
-                return authOptions.callbacks!.session!(params);
-            },
-            async redirect(params) {
-                return authOptions.callbacks!.redirect!(params);
             }
         }
     })(req, context);

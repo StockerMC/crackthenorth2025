@@ -199,4 +199,4 @@ async def create_showcase(query: str, supabase_client: SupabaseClient):
         main_image_url=public_url
     )
 
-    send_email("Maatchaa sponsorshhip", ""+row.get("slug", None), "aayankarmali@gmail.com")
+    # send_email("Maatchaa sponsorshhip", ""+row.get("slug", None), "aayankarmali@gmail.com")

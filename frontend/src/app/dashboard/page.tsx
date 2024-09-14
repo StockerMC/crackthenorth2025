@@ -94,11 +94,33 @@ function StoreDashboard() {
 
 function CreatorDashboard() {
   const { data: session, status } = useSession();
+  const [hasPendingPartnership, setHasPendingPartnership] = useState(false);
+  const [checkingPartnership, setCheckingPartnership] = useState(true);
 
-  if (status === "loading") {
+  useEffect(() => {
+    if (session?.partnershipId) {
+      // Check if this partnership is still pending
+      fetch(`/api/partnerships/${session.partnershipId}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.status === 'pending') {
+            setHasPendingPartnership(true);
+            // Redirect to partnership prompt
+            window.location.href = `/partnership-prompt?id=${session.partnershipId}`;
+          }
+        })
+        .catch(console.error)
+        .finally(() => setCheckingPartnership(false));
+    } else {
+      setCheckingPartnership(false);
+    }
+  }, [session]);
+
+  if (status === "loading" || checkingPartnership) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <h1 className="text-2xl font-bold mb-4">Loading...</h1>
         </div>
       </div>
@@ -121,12 +143,18 @@ function CreatorDashboard() {
     );
   }
 
+  // If we got here, no pending partnerships - show regular creator dashboard
   return (
     <div className="min-h-screen flex items-center justify-center">
       <div className="text-center">
         <h1 className="text-3xl font-bold mb-4 text-green-600">Connected Successfully!</h1>
         <p className="text-gray-600 mb-2">Your YouTube channel is now connected.</p>
         <p className="text-sm text-gray-500">Channel ID: {session?.user?.channelId}</p>
+        {session?.partnershipId && (
+          <p className="text-sm text-blue-500 mt-2">
+            Partnership Status: Completed or Processed
+          </p>
+        )}
       </div>
     </div>
   );

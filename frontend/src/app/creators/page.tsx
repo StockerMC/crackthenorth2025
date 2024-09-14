@@ -38,9 +38,9 @@ export default function CreatorsPage() {
                         <button
                             onClick={handleLogin}
                             disabled={status === "loading"}
-                            className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-4 text-lg font-semibold text-white bg-red-600 rounded-full hover:bg-red-700 transition-all duration-300 transform hover:scale-105"
+                            className="w-full sm:w-auto flex items-center cursor-pointer justify-center gap-2 px-8 py-4 text-lg font-semibold text-white bg-red-600 rounded-full hover:bg-red-700 transition-all duration-300 transform hover:scale-105"
                         >
-                            <span>{status === "loading" ? "Loading..." : "Connect with YouTube"}</span>
+                            <span className="cursor-pointer">{status === "loading" ? "Loading..." : "Connect with YouTube"}</span>
                             <ArrowRight className="w-5 h-5" />
                         </button>
                         <button

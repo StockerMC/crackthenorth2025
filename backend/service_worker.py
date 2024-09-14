@@ -8,7 +8,8 @@ import product_showcase as ps
 from utils.video import parse_video
 from utils.yt_search import fetch_top_shorts
 
-async def evaluate_video(short_url: str, client: SupabaseClient) -> bool:
+async def evaluate_video(short: dict, client: SupabaseClient) -> bool:
+    short_url = short["url"]
     if await client.video_exists(short_url):
         print(f"Video {short_url} already exists in the database.")
         return False
@@ -27,7 +28,7 @@ async def evaluate_video(short_url: str, client: SupabaseClient) -> bool:
             store[p["vendor"]]["titles"].append(p["title"])
             store[p["vendor"]]["images"].append(p["image"])
 
-        await asyncio.gather(*[client.post_yt_row(key, short_url, value["images"], value["titles"]) for key, value in store.items()])
+        await asyncio.gather(*[client.post_yt_row(key, short_url, value["images"], value["titles"], short["short_id"], short["email"], short["channel_id"]) for key, value in store.items()])
 
 async def test_youtube_comments(channel_id: str, video_id: str) -> None:
     """Test the YouTube comments functionality with a given channel and video."""
@@ -161,7 +162,7 @@ async def main():
     shorts = await fetch_top_shorts("matcha")
     print(shorts)
     for short in shorts:
-        await evaluate_video(short["url"], client)
+        await evaluate_video(short, client)
 
 asyncio.run(main())
 

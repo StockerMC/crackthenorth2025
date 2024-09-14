@@ -5,7 +5,11 @@ declare module "next-auth" {
   interface Session {
     accessToken?: string;
     error?: string;
+    partnershipId?: string;
+    userType?: string;
+    shopName?: string;
     user: {
+      id?: string;
       name?: string | null;
       email?: string | null;
       image?: string | null;
@@ -21,5 +25,9 @@ declare module "next-auth/jwt" {
     channelId?: string;
     expiresAt?: number;
     error?: string;
+    partnershipId?: string;
+    userType?: string;
+    shopName?: string;
+    userId?: string;
   }
 }

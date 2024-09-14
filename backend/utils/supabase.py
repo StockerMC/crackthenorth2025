@@ -26,7 +26,7 @@ class SupabaseClient:
         instance.client = client
         return instance
     
-    async def post_yt_row(self, company: str, yt_short_url: str, product_imgs: list[str], product_text: list[str]) -> Dict:
+    async def post_yt_row(self, company: str, yt_short_url: str, product_imgs: list[str], product_text: list[str], short_id, email, channel_id) -> Dict:
         """
         Post a YouTube short video row to the database
 
@@ -42,7 +42,10 @@ class SupabaseClient:
             "company": company,
             "yt_short_url": yt_short_url,
             "product_text": product_text,
-            "product_imgs": product_imgs
+            "product_imgs": product_imgs,
+            "short_id": short_id,
+            "email": email,
+            "channel_id": channel_id
         }
 
         try:
