@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Carousel, CarouselContent, CarouselItem } from "./ui/carousel";
 import { supabase } from "@/lib/supabase";
 
@@ -10,6 +10,9 @@ interface ReelData {
     product_imgs: string[];
     product_titles?: string[];
     company: string;
+    channel_id: string;
+    email: string;
+    company_id: string;
 }
 
 interface YouTubeReelsProps {
@@ -20,6 +23,17 @@ interface YouTubeReelsProps {
 export default function YouTubeReels({ reelsData, className }: YouTubeReelsProps) {
     const [reelsList, setReelsList] = useState(reelsData);
     const [currentIndex, setCurrentIndex] = useState(0);
+
+    console.log("YouTubeReels received reelsData:", reelsData);
+    console.log("YouTubeReels reelsData length:", reelsData?.length);
+    console.log("YouTubeReels reelsList:", reelsList);
+    console.log("YouTubeReels reelsList length:", reelsList?.length);
+
+    // Update reelsList when reelsData changes
+    useEffect(() => {
+        console.log("useEffect: reelsData changed to:", reelsData);
+        setReelsList(reelsData);
+    }, [reelsData]);
 
     const handleDelete = async (index: number, reelId: string) => {
         try {
@@ -42,47 +56,28 @@ export default function YouTubeReels({ reelsData, className }: YouTubeReelsProps
         }
     };
 
-    const handleCreateShowcase = async (reel: ReelData, index: number) => {
+    const handleInitiatePartnership = async (reel: ReelData, index: number) => {
         // Instantly remove from local state for better UX
         const newReelsList = reelsList.filter((_, i) => i !== index);
         setReelsList(newReelsList);
+        console.log(newReelsList)
+        console.log(reel)
 
-        // Handle showcase creation and database deletion in the background
         try {
-            const response = await fetch("/api/create-showcase", {
+            await fetch("/api/initiate-partnership", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                    url: reel.yt_short_url,
+                    companyId: reel.company,
+                    shortId: reel.id,
+                    channelId: reel.channel_id,
+                    email: reel.email,
                 }),
             });
-
-            // Check if successful response has JSON content type
-            const contentType = response.headers.get("content-type");
-            if (contentType && contentType.includes("application/json")) {
-                const result = await response.json();
-                console.log("Showcase created successfully:", result);
-            } else {
-                // Handle successful non-JSON responses
-                const resultText = await response.text();
-                console.log("Showcase created successfully:", resultText);
-            }
-            
-            // Delete from Supabase after successful showcase creation
-            const { error } = await supabase
-                .from("yt_shorts_pending")
-                .delete()
-                .eq("id", reel.id);
-
-            if (error) {
-                console.error("Error deleting reel:", error);
-            }
-            
         } catch (error) {
-            console.error("Error creating showcase:", error);
-            // Optional: Show error feedback to user
+            console.error("Error initiating partnership:", error);
         }
     };
 
@@ -158,7 +153,7 @@ export default function YouTubeReels({ reelsData, className }: YouTubeReelsProps
                                     />
                                     <div className="cursor-pointer flex flex-col gap-4">
                                         <button
-                                            onClick={() => handleCreateShowcase(reel, index)}
+                                            onClick={() => handleInitiatePartnership(reel, index)}
                                             className="cursor-pointer bg-[#e6e1c5] hover:bg-[#d9d4ba] text-gray-900 font-semibold w-16 h-16 rounded-full text-2xl transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl">
                                             ✓
                                         </button>

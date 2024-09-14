@@ -1,0 +1,13 @@
+{
+  "lockfileVersion": 1,
+  "workspaces": {
+    "": {
+      "dependencies": {
+        "resend": "^6.0.3",
+      },
+    },
+  },
+  "packages": {
+    "resend": ["resend@6.0.3", "", { "peerDependencies": { "@react-email/render": "^1.1.0" }, "optionalPeers": ["@react-email/render"] }, "sha512-Yb7o2n52v91LjkUjq5vIZQbJrGiaPoMo2VPAyS0QTKA73tmvHMUQ7P1M56J1ux/Cw9Lf68PeaKidTl6GuS8DTA=="],
+  }
+}

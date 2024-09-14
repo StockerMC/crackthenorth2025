@@ -14,9 +14,12 @@ export default function SquigglyUnderlineText({ children }: SquigglyUnderlineTex
             const length = underlineRef.current.getTotalLength();
             underlineRef.current.style.strokeDasharray = length.toString();
             underlineRef.current.style.strokeDashoffset = length.toString();
+            const path = underlineRef.current;
             setTimeout(() => {
-                underlineRef.current!.style.transition = "stroke-dashoffset 2.2s cubic-bezier(0.77,0,0.175,1)";
-                underlineRef.current!.style.strokeDashoffset = "0";
+                if (path) {
+                    path.style.transition = "stroke-dashoffset 2.2s cubic-bezier(0.77,0,0.175,1)";
+                    path.style.strokeDashoffset = "0";
+                }
             }, 300);
         }
     }, []);
