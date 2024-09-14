@@ -1,4 +1,4 @@
-import NextAuth, { type NextAuthOptions } from "next-auth";
+import NextAuth, { type NextAuthOptions, User, Account } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import { JWT } from "next-auth/jwt";
 import { upsertCreatorTokens, createPartnership } from "@/lib/supabaseAdmin";
@@ -321,19 +321,13 @@ export const authOptions: NextAuthOptions = {
 // Store request in a context that can be accessed by callbacks
 let currentRequest: Request | null = null;
 
-interface HandlerContext {
-    params?: Record<string, string>;
-    [key: string]: unknown;
+interface NextAuthContext {
+    params: Promise<{ nextauth: string[] }>;
 }
 
-interface JwtCallbackParams {
-    token: JWT;
-    user?: Record<string, unknown>;
-    account?: Record<string, unknown>;
-    trigger?: string;
-}
 
-const handler = async (req: Request, context: HandlerContext): Promise<Response> => {
+
+const handler = async (req: Request, context: NextAuthContext): Promise<Response> => {
     // Store the current request for access in callbacks
     currentRequest = req;
     
@@ -345,7 +339,7 @@ const handler = async (req: Request, context: HandlerContext): Promise<Response>
         ...authOptions,
         callbacks: {
             ...authOptions.callbacks,
-            async jwt({ token, user, account, trigger }: JwtCallbackParams): Promise<JWT> {
+            async jwt({ token, user, account, trigger }): Promise<JWT> {
                 console.log("[JWT Callback] account:", account ? "present" : "missing");
                 
                 // Initial sign in
@@ -417,15 +411,15 @@ const handler = async (req: Request, context: HandlerContext): Promise<Response>
 
                     // --- Token expiry ---
                     const tokenExpiry: number = account.expires_at
-                        ? account.expires_at * 1000
+                        ? (account.expires_at as number) * 1000
                         : Date.now() + 3600 * 1000;
 
                     // --- Save to Supabase with the channelId ---
                     const creatorData: { id?: string } | null = await upsertCreatorTokens({
                         channelId,
                         email: user.email!,
-                        accessToken: account.access_token,
-                        refreshToken: account.refresh_token,
+                        accessToken: account.access_token as string,
+                        refreshToken: account.refresh_token as string,
                         expiresAt: new Date(tokenExpiry),
                     });
 
@@ -441,8 +435,8 @@ const handler = async (req: Request, context: HandlerContext): Promise<Response>
 
                     return {
                         ...token,
-                        accessToken: account.access_token,
-                        refreshToken: account.refresh_token,
+                        accessToken: account.access_token as string,
+                        refreshToken: account.refresh_token as string,
                         channelId,
                         expiresAt: tokenExpiry,
                         partnershipId,

@@ -48,7 +48,7 @@ async def ingest_products(request: Request):
         shop_url = data.get("shop_url")
         
         if not shop_url:
-            return json({"error": "shop_url is required"}, status=400)
+            return json({"error": "shop_url is required"}, status=200)
         
         # Get products from Shopify
         products = shopify.get_products(shop_url)
@@ -56,7 +56,7 @@ async def ingest_products(request: Request):
         products_with_images = [p for p in products if p.get("image")]
         
         if not products_with_images:
-            return json({"error": "No products with images found"}, status=400)
+            return json({"error": "No products with images found"}, status=200)
         
         # Create embeddings and upsert to vector DB
         embeddings = vectordb.embed_products(products_with_images)
@@ -69,7 +69,9 @@ async def ingest_products(request: Request):
         })
         
     except Exception as e:
-        return json({"error": str(e)}, status=500)
+        import traceback
+        traceback.print_exc()
+        return json({"error": str(e)}, status=200)
 
 # Search for similar products by image URL
 @post("/search/image")

@@ -47,7 +47,7 @@ export default async function ProductPage({
                             <span className="font-medium text-gray-100">62 reviews</span>
                         </div>
                         {/*TODO: Get real price*/}
-                        <h1 className="text-3xl font-semibold">$67.67</h1>
+                        <h1 className="text-3xl font-semibold">$48.66</h1>
                         <QuantityCounter/>
 
                         {/* Description */}
