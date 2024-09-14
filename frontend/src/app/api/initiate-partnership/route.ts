@@ -4,9 +4,10 @@ import { Resend } from 'resend';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-function generatePartnershipLink(baseUrl: string, channelId: string, companyId: string, shortId: string): string {
+function generatePartnershipLink(baseUrl: string, channelId: string, companyId: string, shortId: string, videoId?: string): string {
   const state = btoa(JSON.stringify({ channelId, companyId, shortId }));
-  return `${baseUrl}/connect?state=${state}&channelId=${channelId}`;
+  const videoParam = videoId ? `&videoId=${videoId}` : '';
+  return `${baseUrl}/connect?state=${state}&channelId=${channelId}${videoParam}`;
 }
 
 export async function POST(req: NextRequest) {
@@ -17,8 +18,20 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
+    // // Get the YouTube video ID from the shorts table
+    // const { data: shortData, error: shortError } = await supabaseAdmin
+    //   .from('youtube_shorts')
+    //   .select('youtube_id')
+    //   .eq('id', shortId)
+    //   .single();
+
+    // if (shortError || !shortData) {
+    //   console.error('Error fetching short data:', shortError);
+    //   return NextResponse.json({ error: 'Short not found' }, { status: 404 });
+    // }
+
     const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
-    const partnershipLink = generatePartnershipLink(baseUrl, channelId, companyId, shortId);
+    const partnershipLink = generatePartnershipLink(baseUrl, channelId, companyId, shortId, shortId);
     console.log(email)
     console.log(partnershipLink)
     const result = await resend.emails.send({

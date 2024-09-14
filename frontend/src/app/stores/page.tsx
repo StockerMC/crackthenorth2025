@@ -36,7 +36,7 @@ export default function ConnectStorePage() {
       // Store the shop name in local storage to be retrieved by the dashboard
       localStorage.setItem("shop_name", shopName);
 
-      router.push("/dashboard?store_connected=true");
+      router.push("/dashboard/reels?store_connected=true");
     } catch (err: unknown) {
       setError((err as Error).message);
     } finally {
