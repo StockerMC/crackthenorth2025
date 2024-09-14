@@ -46,7 +46,7 @@ export default function ConnectStorePage() {
 
   return (
     <div className="absolute flex items-center justify-center h-screen align-middle">
-      <div className="w-full max-w-md p-8 space-y-6 bg-white/20 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20">
+      <div className="w-full max-w-md p-8 space-y-6 bg-black/10 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20">
         <h1 className="text-2xl font-bold text-center text-white">Connect Your Shopify Store</h1>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
@@ -63,7 +63,7 @@ export default function ConnectStorePage() {
               required
             />
           </div>
-          <Button type="submit" className="w-full" disabled={isLoading}>
+          <Button type="submit" className="w-full cursor-pointer bg-[#e6e1c5] text-gray-800 hover:bg-[#d9d4ba]" disabled={isLoading}>
             {isLoading ? "Connecting..." : "Connect Store"}
           </Button>
           {error && <p className="text-sm text-red-300">{error}</p>}

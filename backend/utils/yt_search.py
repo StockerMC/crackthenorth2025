@@ -1,5 +1,6 @@
 from __future__ import annotations
 import os
+import re
 from googleapiclient.discovery import build
 from datetime import datetime, timedelta, timezone
 from dotenv import load_dotenv
@@ -44,12 +45,38 @@ async def fetch_top_shorts(keyword: str, max_results: int = 5, relevance_languag
             "description": snippet["description"],
             "thumbnail": snippet["thumbnails"]["high"]["url"],
             "channelTitle": snippet["channelTitle"],
+            "channelId": snippet["channelId"],
             "publishedAt": snippet["publishedAt"],
         })
 
     return videos
 
-# Example usage
-import asyncio
-analyzed_videos = asyncio.run((fetch_top_shorts(keyword="matcha")))
-print(analyzed_videos)
+async def get_channel_email(channel_id: str):
+    """
+    Fetches the email from a YouTube channel's description.
+
+    Args:
+        channel_id: The ID of the YouTube channel.
+
+    Returns:
+        The first email found in the description, or None if not found.
+    """
+    try:
+        youtube = build("youtube", "v3")
+        request = youtube.channels().list(
+            part="snippet",
+            id=channel_id
+        )
+        response = request.execute()
+
+        if response.get("items"):
+            description = response["items"][0]["snippet"]["description"]
+            print(description)
+            match = re.search(r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}", description)
+            if match:
+                return match.group(0)
+        return os.getenv("DEFAULT_EMAIL")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        traceback.print_exc()
+        return None

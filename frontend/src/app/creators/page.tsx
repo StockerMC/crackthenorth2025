@@ -22,16 +22,16 @@ export default function CreatorsPage() {
     };
 
     return (
-        <div className="relative min-h-screen w-full overflow-hidden bg-white rounded-2xl ml-20 mr-20">
+        <div className="relative min-h-screen w-full overflow-hidden bg-black/5 rounded-2xl ml-20 mr-20 backdrop-blur-sm">
             <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 py-8">
-                <div className="max-w-4xl w-full mx-auto text-center bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl p-8 md:p-12 border border-gray-200/50">
+                <div className="max-w-4xl w-full mx-auto text-center bg-black/5 backdrop-blur-sm rounded-3xl shadow-2xl p-8 md:p-12">
                     <div className="flex items-center justify-center mb-6">
                         <Youtube className="w-16 h-16 text-red-600" />
                     </div>
-                    <h1 className="text-5xl md:text-7xl font-bold text-gray-900 mb-4">
+                    <h1 className="text-5xl md:text-7xl font-bold text-gray-100 mb-4">
                         Join the <SquigglyUnderlineText>Creator</SquigglyUnderlineText> Economy
                     </h1>
-                    <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto mb-8">
+                    <p className="text-lg md:text-xl text-gray-100 max-w-2xl mx-auto mb-8">
                         Monetize your YouTube content and connect with your audience in a whole new way. Turn your videos into shoppable experiences.
                     </p>
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -45,7 +45,7 @@ export default function CreatorsPage() {
                         </button>
                         <button
                             onClick={() => router.push("/")}
-                            className="w-full sm:w-auto px-8 py-4 text-lg font-semibold text-gray-700 bg-gray-100 rounded-full hover:bg-gray-200 transition-all duration-300"
+                            className="w-full sm:w-auto px-8 py-4 text-lg font-semibold text-gray-700 bg-[#e6e1c5] rounded-full hover:brightness-90 transition-all duration-300"
                         >
                             Learn More
                         </button>
@@ -54,21 +54,21 @@ export default function CreatorsPage() {
 
                 <div className="w-full max-w-5xl mx-auto mt-16 px-4">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-                        <div className="p-6 bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-200/70 shadow-lg">
-                            <h3 className="text-xl font-bold text-gray-900 mb-2">Seamless Integration</h3>
-                            <p className="text-gray-600">
+                        <div className="p-6 bg-black/5 backdrop-blur-sm rounded-2xl shadow-lg">
+                            <h3 className="text-xl font-bold text-gray-100 mb-2">Seamless Integration</h3>
+                            <p className="text-gray-100">
                                 Connect your YouTube channel in seconds. We automatically sync your videos and analytics.
                             </p>
                         </div>
-                        <div className="p-6 bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-200/70 shadow-lg">
-                            <h3 className="text-xl font-bold text-gray-900 mb-2">Powerful Monetization</h3>
-                            <p className="text-gray-600">
+                        <div className="p-6 bg-black/5 backdrop-blur-sm rounded-2xl shadow-lg">
+                            <h3 className="text-xl font-bold text-gray-100 mb-2">Powerful Monetization</h3>
+                            <p className="text-gray-100">
                                 Tag products in your videos and earn commissions on every sale. No upfront costs.
                             </p>
                         </div>
-                        <div className="p-6 bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-200/70 shadow-lg">
-                            <h3 className="text-xl font-bold text-gray-900 mb-2">Audience Insights</h3>
-                            <p className="text-gray-600">
+                        <div className="p-6 bg-black/5 backdrop-blur-sm rounded-2xl shadow-lg">
+                            <h3 className="text-xl font-bold text-gray-100 mb-2">Audience Insights</h3>
+                            <p className="text-gray-100">
                                 Understand your viewers&apos; shopping habits and optimize your content for higher earnings.
                             </p>
                         </div>
