@@ -2,6 +2,7 @@ from google import genai
 from PIL import Image
 from io import BytesIO
 import requests
+from utils.emails import send_email
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -161,10 +162,41 @@ async def create_showcase(query: str, supabase_client: SupabaseClient):
     res = gen_showcase_image_from_products(prompt, chosen_products)
     public_url = await supabase_client.upload_image_to_supabase(res, "product")
 
+    # Generate combined title and description using Gemini
+    product_titles = [p["title"] for p in chosen_products]
+    combined_title_prompt = f"""
+    Given these product titles: {', '.join(product_titles)}
+    
+    Create a catchy, concise title that combines all these products into one cohesive showcase name. 
+    Then create a brief description (1-2 sentences) that describes what this product collection offers.
+    
+    Format your response exactly as: Title;;; Description
+    
+    Example: "Ultimate Tech Workspace Bundle;;; A complete collection of premium devices and accessories designed to elevate your productivity and workspace aesthetics."
+    """
+    
+    title_response = client.models.generate_content(
+        model="gemini-2.0-flash",
+        contents=[combined_title_prompt]
+    )
+    
+    title_and_description = title_response.candidates[0].content.parts[0].text.strip()
+    
+    # Parse title and description
+    try:
+        title, description = title_and_description.split(";;;")
+        title = title.strip()
+        description = description.strip()
+    except ValueError:
+        # Fallback if parsing fails
+        title = " + ".join(product_titles[:3])  # Use first 3 product titles
+        description = f"A curated collection featuring {', '.join(product_titles)}"
+    
     row = await supabase_client.post_product_row(
-        title=query,
+        title=title,
         showcase_images=[p["image"] for p in chosen_products if p["image"]],
-        products={ "products": chosen_products },
+        products={ "products": chosen_products, "description": description },
         main_image_url=public_url
     )
-    return row.get("slug", None)
+
+    send_email("Maatchaa sponsorshhip", ""+row.get("slug", None), "aayankarmali@gmail.com")

@@ -42,7 +42,12 @@ export default function YouTubeReels({ reelsData, className }: YouTubeReelsProps
         }
     };
 
-    const handleCreateShowcase = async (reel: ReelData) => {
+    const handleCreateShowcase = async (reel: ReelData, index: number) => {
+        // Instantly remove from local state for better UX
+        const newReelsList = reelsList.filter((_, i) => i !== index);
+        setReelsList(newReelsList);
+
+        // Handle showcase creation and database deletion in the background
         try {
             const response = await fetch("/api/create-showcase", {
                 method: "POST",
@@ -53,7 +58,6 @@ export default function YouTubeReels({ reelsData, className }: YouTubeReelsProps
                     url: reel.yt_short_url,
                 }),
             });
-
 
             // Check if successful response has JSON content type
             const contentType = response.headers.get("content-type");
@@ -66,8 +70,15 @@ export default function YouTubeReels({ reelsData, className }: YouTubeReelsProps
                 console.log("Showcase created successfully:", resultText);
             }
             
-            // Optional: Show success feedback to user
-            // You could add a toast notification here
+            // Delete from Supabase after successful showcase creation
+            const { error } = await supabase
+                .from("yt_shorts_pending")
+                .delete()
+                .eq("id", reel.id);
+
+            if (error) {
+                console.error("Error deleting reel:", error);
+            }
             
         } catch (error) {
             console.error("Error creating showcase:", error);
@@ -147,13 +158,13 @@ export default function YouTubeReels({ reelsData, className }: YouTubeReelsProps
                                     />
                                     <div className="cursor-pointer flex flex-col gap-4">
                                         <button
-                                            onClick={() => handleCreateShowcase(reel)}
-                                            className="cursor-pointer bg-[#e6e1c5] hover:bg-[#d9d4ba] text-gray-900 font-semibold w-12 h-12 rounded-full text-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl">
+                                            onClick={() => handleCreateShowcase(reel, index)}
+                                            className="cursor-pointer bg-[#e6e1c5] hover:bg-[#d9d4ba] text-gray-900 font-semibold w-16 h-16 rounded-full text-2xl transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl">
                                             ✓
                                         </button>
                                         <button
                                             onClick={() => handleDelete(index, reel.id)}
-                                            className="cursor-pointer bg-[#e6e1c5] hover:bg-[#d9d4ba] text-gray-900 font-semibold w-12 h-12 rounded-full text-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl">
+                                            className="cursor-pointer bg-[#e6e1c5] hover:bg-[#d9d4ba] text-gray-900 font-semibold w-16 h-16 rounded-full text-2xl transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl">
                                             X
                                         </button>
                                     </div>
