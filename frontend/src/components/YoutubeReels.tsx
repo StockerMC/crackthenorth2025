@@ -1,7 +1,7 @@
 "use client";
 
-import { Carousel, CarouselContent, CarouselItem } from "./ui/carousel";
 import { useState } from "react";
+import { Carousel, CarouselContent, CarouselItem } from "./ui/carousel";
 import { supabase } from "@/lib/supabase";
 
 interface ReelData {
@@ -79,9 +79,9 @@ export default function YouTubeReels({ reelsData, className }: YouTubeReelsProps
         <div className="overflow-hidden h-[1000px] w-[700px]">
             {reelsList.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-[800px] w-full text-center">
-                    <img 
-                        src="https://media2.giphy.com/media/v1.Y2lkPTZjMDliOTUyMmc0Y2U3cHJ5dW5kdjc0cmtvNzR4cnZ1dXNrM2FlY2lhOXBjeHg2ZCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/SS40oFiyppsHhvClo2/200.gif" 
-                        alt="Labubu" 
+                    <img
+                        src="https://media2.giphy.com/media/v1.Y2lkPTZjMDliOTUyMmc0Y2U3cHJ5dW5kdjc0cmtvNzR4cnZ1dXNrM2FlY2lhOXBjeHg2ZCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/SS40oFiyppsHhvClo2/200.gif"
+                        alt="Labubu"
                         className="w-64 h-64 object-contain mb-8"
                     />
                     <h1 className="text-3xl font-bold text-gray-800 mb-4">
@@ -90,9 +90,9 @@ export default function YouTubeReels({ reelsData, className }: YouTubeReelsProps
                 </div>
             ) : (
                 <div className="relative">
-                    <Carousel 
-                        className="w-full h-full max-w-xs" 
-                        opts={{ loop: true }} 
+                    <Carousel
+                        className="w-full h-full max-w-xs"
+                        opts={{ loop: true }}
                         orientation="vertical"
                         setApi={(api) => {
                             if (api) {
@@ -163,7 +163,7 @@ export default function YouTubeReels({ reelsData, className }: YouTubeReelsProps
                     })}
                         </CarouselContent>
                     </Carousel>
-                    
+
                     {/* Reel Counter */}
                     <div className="absolute bottom-4 right-4 bg-black/50 text-white px-3 py-1 rounded-full text-sm font-medium backdrop-blur-sm">
                         {currentIndex + 1} / {reelsList.length}

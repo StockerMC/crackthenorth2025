@@ -23,7 +23,7 @@ export default function SquigglyUnderlineText({ children }: SquigglyUnderlineTex
 
     return (
         <span className="relative inline-block">
-            <span className="text-[#208030] font-bold font-serif relative z-10">{children}</span>
+            <span className="text-[#d0ffa1] font-bold font-serif relative z-10">{children}</span>
             <svg
                 className="absolute pt-1 left-0 bottom-[-6px] w-full h-[32px] z-0"
                 viewBox="0 0 300 22"

@@ -9,7 +9,7 @@ class Product(TypedDict):
     vendor: str
 
 def get_products(shop_url: str) -> List[Product]:
-    res = requests.get(shop_url+"/products.json")
+    res = requests.get("https://" + shop_url + "/products.json")
     data = res.json()
     simplified_products: List[Product] = []
     for product in data.get("products", []):

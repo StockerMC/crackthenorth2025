@@ -1,7 +1,7 @@
 from dotenv import load_dotenv
 load_dotenv()
 
-from utils import shopify, vectordb
+from utils import shopify, vectordb, yt_search
 from blacksheep import Request, Application, delete, get, post, json
 from utils.supabase import SupabaseClient
 import product_showcase as ps
@@ -284,4 +284,15 @@ async def create_showcase(request: Request):
     except Exception as e:
         print(f"Error creating showcase: {str(e)}")
         return json({"error": "Failed to create showcase"}, status=500)
+
+@get("/channel/email/{channel_id}")
+async def get_channel_email_endpoint(channel_id: str):
+    try:
+        email = await yt_search.get_channel_email(channel_id)
+        if email is not None:
+            return json({"channel_id": channel_id, "email": email})
+        else:
+            return json({"error": "Email not found in channel description"}, status=404)
+    except Exception as e:
+        return json({"error": str(e)}, status=500)
 
