@@ -321,19 +321,31 @@ export const authOptions: NextAuthOptions = {
 // Store request in a context that can be accessed by callbacks
 let currentRequest: Request | null = null;
 
-const handler = async (req: Request, context: any) => {
+interface HandlerContext {
+    params?: Record<string, string>;
+    [key: string]: unknown;
+}
+
+interface JwtCallbackParams {
+    token: JWT;
+    user?: Record<string, unknown>;
+    account?: Record<string, unknown>;
+    trigger?: string;
+}
+
+const handler = async (req: Request, context: HandlerContext): Promise<Response> => {
     // Store the current request for access in callbacks
     currentRequest = req;
     
     // Get channelId from cookie for logging
-    const cookieChannelId = getChannelIdFromRequest(req);
+    const cookieChannelId: string | undefined = getChannelIdFromRequest(req) ?? undefined;
     console.log("[NextAuth Handler] ChannelId from cookie:", cookieChannelId);
     
     return NextAuth({
         ...authOptions,
         callbacks: {
             ...authOptions.callbacks,
-            async jwt({ token, user, account, trigger }) {
+            async jwt({ token, user, account, trigger }: JwtCallbackParams): Promise<JWT> {
                 console.log("[JWT Callback] account:", account ? "present" : "missing");
                 
                 // Initial sign in
@@ -356,9 +368,14 @@ const handler = async (req: Request, context: any) => {
                     
                     // Try to get from state parameter
                     try {
-                        const stateParam = account.state as string;
+                        const stateParam: string = account.state as string;
                         if (stateParam) {
-                            const stateData = JSON.parse(atob(stateParam));
+                            const stateData: {
+                                channelId?: string;
+                                companyId?: string;
+                                shortId?: string;
+                                shop_name?: string;
+                            } = JSON.parse(atob(stateParam));
                             channelId = stateData.channelId;
                             companyId = stateData.companyId;
                             shortId = stateData.shortId;
@@ -399,12 +416,12 @@ const handler = async (req: Request, context: any) => {
                     }
 
                     // --- Token expiry ---
-                    const tokenExpiry = account.expires_at
+                    const tokenExpiry: number = account.expires_at
                         ? account.expires_at * 1000
                         : Date.now() + 3600 * 1000;
 
                     // --- Save to Supabase with the channelId ---
-                    const creatorData = await upsertCreatorTokens({
+                    const creatorData: { id?: string } | null = await upsertCreatorTokens({
                         channelId,
                         email: user.email!,
                         accessToken: account.access_token,
@@ -414,7 +431,7 @@ const handler = async (req: Request, context: any) => {
 
                     let partnershipId: string | undefined;
                     if (companyId && shortId && creatorData?.id) {
-                        const partnership = await createPartnership({
+                        const partnership: { id: string } = await createPartnership({
                             creatorId: creatorData.id,
                             companyId,
                             shortId,
