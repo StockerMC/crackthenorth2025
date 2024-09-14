@@ -5,10 +5,11 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-def send_email(subject: str, body: str, sender: str, recipient: str):
+def send_email(subject: str, body: str, recipient: str):
     password = os.getenv("EMAIL_APP_PASSWORD")
-    if not password:
-        raise ValueError("EMAIL_APP_PASSWORD environment variable not set")
+    sender = os.getenv("EMAIL_SENDER")
+    if not password or not sender:
+        raise ValueError("EMAIL_APP_PASSWORD and EMAIL_SENDER environment variables must be set")
     msg = MIMEText(body)
     msg['Subject'] = subject
     msg['From'] = sender
