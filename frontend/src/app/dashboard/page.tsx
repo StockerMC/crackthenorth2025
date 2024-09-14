@@ -96,7 +96,18 @@ function CreatorDashboard({ videoId }: { videoId?: string | null }) {
   const { data: session, status } = useSession();
   const [hasPendingPartnership, setHasPendingPartnership] = useState(false);
   const [checkingPartnership, setCheckingPartnership] = useState(true);
-  const [partnershipData, setPartnershipData] = useState<any>(null);
+  interface PartnershipData {
+    status: string;
+    short?: {
+      youtube_id?: string;
+      title?: string;
+    };
+    company?: {
+      shop_name?: string;
+    };
+  }
+
+  const [partnershipData, setPartnershipData] = useState<PartnershipData | null>(null);
   const [processing, setProcessing] = useState(false);
 
   useEffect(() => {
