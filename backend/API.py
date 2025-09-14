@@ -3,6 +3,7 @@ load_dotenv()
 
 from utils import shopify, vectordb, yt_search
 from blacksheep import Request, Application, delete, get, post, json
+from blacksheep.server.cors import CORSPolicy
 from utils.supabase import SupabaseClient
 import product_showcase as ps
 from utils.video import parse_video
@@ -10,6 +11,14 @@ import json as json_lib
 from utils.emails import send_email
 
 app = Application()
+
+# Configure CORS
+app.use_cors(
+    allow_methods="GET POST PUT DELETE OPTIONS",
+    allow_origins="*",  # In production, specify exact origins
+    allow_headers="*",
+    allow_credentials=True
+)
 
 # Global SupabaseClient instance
 supabase_client = None
