@@ -79,9 +79,11 @@ async def get_channel_email(channel_id: str):
         if response.get("items"):
             description = response["items"][0]["snippet"]["description"]
             print(description)
-            match = re.search(r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}", description)
-            if match:
-                return match.group(0)
+            # TEMPORARILY:
+            return os.getenv("DEFAULT_EMAIL")
+            # match = re.search(r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}", description)
+            # if match:
+                # return match.group(0)
         return os.getenv("DEFAULT_EMAIL")
     except Exception as e:
         print(f"An error occurred: {e}")
