@@ -6,10 +6,16 @@ import { useEffect, useState } from "react";
 
 export default function ReelsPage() {
     type Reel = {
-        id: number;
+        id: string;
         company: string;
-        // Add other fields from your yt_shorts_pending table as needed
-        [key: string]: unknown;
+        yt_short_url: string;
+        product_text?: string;
+        product_imgs: string[];
+        product_titles?: string[];
+        short_id?: string;
+        email: string;
+        channel_id: string;
+        company_id: string; // This will be set from company field
     };
     const [data, setData] = useState<Reel[] | null>(null);
     useEffect(() => {
@@ -27,8 +33,15 @@ export default function ReelsPage() {
 
             console.log("Fetched data:", yt_shorts_pending);
             console.log("Data length:", yt_shorts_pending?.length);
-            console.log("Setting data:", yt_shorts_pending);
-            setData(yt_shorts_pending || []);
+            
+            // Transform the data to match ReelData interface
+            const transformedData = (yt_shorts_pending || []).map((reel: Reel) => ({
+                ...reel,
+                company_id: reel.company // Map company to company_id
+            }));
+            
+            console.log("Setting data:", transformedData);
+            setData(transformedData);
         };
         fetchData();
     }, []);
