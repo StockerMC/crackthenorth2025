@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { signIn } from 'next-auth/react';
 
-export default function ConnectPage() {
+function ConnectPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isUpdatingComment, setIsUpdatingComment] = useState(false);
@@ -76,5 +76,20 @@ export default function ConnectPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function ConnectPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">Loading...</h1>
+          <p>Please wait while we prepare the connection page.</p>
+        </div>
+      </div>
+    }>
+      <ConnectPageContent />
+    </Suspense>
   );
 }

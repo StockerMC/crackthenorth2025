@@ -1,10 +1,10 @@
 'use client';
 
 import { useSearchParams, useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { Button } from '@/components/ui/button';
 
-export default function ConfirmPartnershipPage() {
+function ConfirmPartnershipContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const partnershipId = searchParams.get('id');
@@ -76,5 +76,22 @@ export default function ConfirmPartnershipPage() {
         </Button>
       </div>
     </div>
+  );
+}
+
+export default function ConfirmPartnershipPage() {
+  return (
+    <Suspense fallback={
+      <div className="container mx-auto p-4">
+        <h1 className="text-2xl font-bold mb-4">Loading Partnership Details...</h1>
+        <div className="animate-pulse">
+          <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+          <div className="h-4 bg-gray-200 rounded w-1/2 mb-2"></div>
+          <div className="h-4 bg-gray-200 rounded w-1/4"></div>
+        </div>
+      </div>
+    }>
+      <ConfirmPartnershipContent />
+    </Suspense>
   );
 }
