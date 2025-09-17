@@ -1,6 +1,7 @@
 import type React from "react"
 import type { Metadata } from "next"
 import { Figtree, Instrument_Serif } from "next/font/google"
+import { GoogleAnalytics } from '@next/third-parties/google'
 import Header from "@/components/Header"
 import "./globals.css"
 import Gradient from "@/components/Gradient"
@@ -60,6 +61,9 @@ export default function RootLayout({
                     </main>
                 </div>
             </Providers>
+            {process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID && (
+                <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID} />
+            )}
         </body>
         </html>
     )
