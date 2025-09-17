@@ -19,10 +19,13 @@ export default function Home() {
                     <p className="text-lg md:text-xl text-white drop-shadow-lg max-w-2xl mx-auto lg:mx-0 font-light mb-8">
                         Connect authentic creators with brands through seamless collaboration and engagement
                     </p>
-                    <button
-                        className="bg-[#e6e1c5] hover:bg-[#d9d4ba] text-gray-900 font-semibold py-4 px-8 rounded-full text-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl">
+                    {/* Should open a questionnaire popup */}
+                    <a
+                        href="/stores"
+                        className="bg-[#e6e1c5] hover:bg-[#d9d4ba] text-gray-900 font-semibold py-4 px-8 rounded-full text-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center"
+                    >
                         Get Started
-                    </button>
+                    </a>
                 </div>
 
                 <div className="flex justify-center items-center w-[40%]">
