@@ -40,7 +40,7 @@ function ConnectPageContent() {
   const updateComment = async (channelId: string, videoId: string) => {
     setIsUpdatingComment(true);
     try {
-      const response = await fetch('http://localhost:8000/comments/update', {
+      const response = await fetch('http://localhost:8080/comments/update', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

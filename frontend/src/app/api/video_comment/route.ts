@@ -5,7 +5,7 @@ export async function POST(req: NextRequest) {
     const data = await req.json();
     
     // Forward the request to the backend Python API
-    const backendUrl = process.env.BACKEND_URL || 'http://localhost:8000';
+    const backendUrl = process.env.BACKEND_URL || 'http://localhost:8080';
     
     const response = await fetch(`${backendUrl}/comments/update`, {
       method: 'POST',
