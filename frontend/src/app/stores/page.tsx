@@ -5,9 +5,10 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 
 export default function ConnectStorePage() {
-  const [shopName, setShopName] = useState("");
+  const [shopName, setShopName] = useState("matchamatcha.ca"); // TODO
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showTooltip, setShowTooltip] = useState(false);
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -49,7 +50,7 @@ export default function ConnectStorePage() {
       <div className="w-full max-w-md p-8 space-y-6 bg-black/10 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20">
         <h1 className="text-2xl font-bold text-center text-white">Connect Your Shopify Store</h1>
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
+          <div className="relative">
             <label htmlFor="shopName" className="block text-sm font-medium text-white/90">
               Shop Name
             </label>
@@ -57,11 +58,21 @@ export default function ConnectStorePage() {
               id="shopName"
               type="text"
               value={shopName}
-              onChange={(e) => setShopName(e.target.value)}
+              // onChange={(e) => setShopName(e.target.value)} -- TODO
+              onChange={(e) => null}
               placeholder="your-store.myshopify.com"
+              onFocus={() => setShowTooltip(true)}
+              onBlur={() => setShowTooltip(false)}
+              onClick={() => setShowTooltip(true)}
               className="w-full px-3 py-2 mt-1 border border-white/30 rounded-md shadow-sm bg-white/10 backdrop-blur-sm text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent"
               required
+              // disabled // TODO
             />
+            {showTooltip && (
+              <div className="absolute z-10 w-full bottom-full mb-1 p-2 bg-sky-400 text-sky-900 text-sm rounded-md shadow-lg border border-sky-300">
+                Right now, only <strong>matchamatcha.ca</strong> can be tested. Keep an eye out as we expand support soon!
+              </div>
+            )}
           </div>
           <Button type="submit" className="w-full cursor-pointer bg-[#e6e1c5] text-gray-800 hover:bg-[#d9d4ba]" disabled={isLoading}>
             {isLoading ? "Connecting..." : "Connect Store"}

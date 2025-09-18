@@ -28,9 +28,18 @@ class EmbeddingItem(TypedDict):
     metadata: Metadata
 
 
-co = cohere.ClientV2(os.getenv("COHERE_KEY"))
-pc = Pinecone(api_key=os.getenv("PINECONE_KEY"), environment="us-east1-gcp")
-index = pc.Index(os.getenv("INDEX_NAME"))
+COHERE_KEY=os.getenv("COHERE_KEY")
+if not COHERE_KEY:
+    raise ValueError("Missing COHERE_KEY in environment variables")
+co = cohere.ClientV2(COHERE_KEY)
+PINECONE_KEY=os.getenv("PINECONE_KEY")
+if not PINECONE_KEY:
+    raise ValueError("Missing PINECONE_KEY in environment variables")
+pc = Pinecone(api_key=PINECONE_KEY, environment="us-east1-gcp")
+INDEX_NAME=os.getenv("INDEX_NAME")
+if not INDEX_NAME:
+    raise ValueError("Missing INDEX_NAME in environment variables")
+index = pc.Index(INDEX_NAME)
 
 def imageurl_to_b64(image_url: str) -> str:
     image = requests.get(image_url)
@@ -89,7 +98,6 @@ def upsert_embeddings(items: List[EmbeddingItem]) -> None:
     index.upsert(vectors=items)
 
 def query_embeddings(vector: List[float], top_k: int = 10) -> Any:
-    
     return index.query(
         vector=vector,
         top_k=top_k,

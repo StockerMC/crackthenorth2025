@@ -6,6 +6,7 @@ import Header from "@/components/Header"
 import "./globals.css"
 import Gradient from "@/components/Gradient"
 import { Providers } from "@/components/Providers"
+import { Toaster } from 'react-hot-toast'
 
 const figtree = Figtree({
     subsets: ["latin"],
@@ -60,6 +61,7 @@ export default function RootLayout({
                         </div>
                     </main>
                 </div>
+                <Toaster />
             </Providers>
             {process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID && (
                 <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID} />

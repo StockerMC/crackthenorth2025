@@ -3,6 +3,7 @@ import PhoneComponent from "@/components/Phone";
 import PhoneImageScroller from "@/components/PhoneImageScroller";
 import { ShortScroller } from "@/components/ShortScroller";
 import SquigglyUnderlineText from "@/components/SquigglyUnderlineText";
+import Link from "next/link";
 
 export default function Home() {
     return (
@@ -20,12 +21,12 @@ export default function Home() {
                         Connect authentic creators with brands through seamless collaboration and engagement
                     </p>
                     {/* Should open a questionnaire popup */}
-                    <a
+                    <Link
                         href="/stores"
-                        className="bg-[#e6e1c5] hover:bg-[#d9d4ba] text-gray-900 font-semibold py-4 px-8 rounded-full text-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center"
+                        className="bg-[#e6e1c5] hover:bg-[#d9d4ba] text-gray-900 font-semibold py-4 px-8 rounded-full text-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center w-fit"
                     >
                         Get Started
-                    </a>
+                    </Link>
                 </div>
 
                 <div className="flex justify-center items-center w-[40%]">

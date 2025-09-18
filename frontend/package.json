@@ -13,6 +13,7 @@
     "@fontsource/instrument-serif": "^5.2.7",
     "@next/third-parties": "^15.5.3",
     "@radix-ui/react-slot": "^1.2.3",
+    "@react-email/render": "^1.2.3",
     "@supabase/ssr": "^0.7.0",
     "@supabase/supabase-js": "^2.57.4",
     "@tailwindcss/language-server": "^0.14.26",
@@ -26,6 +27,8 @@
     "ogl": "^1.0.11",
     "react": "19.1.0",
     "react-dom": "19.1.0",
+    "react-hot-toast": "^2.6.0",
+    "resend": "^6.1.0",
     "supabase": "^2.40.7",
     "tailwind-merge": "^3.3.1"
   },

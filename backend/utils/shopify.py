@@ -18,9 +18,9 @@ def get_products(shop_url: str) -> List[Product]:
         price = 20.0
         if product.get("variants") is None or len(product.get("variants")) == 0:
             price = product.get("variants")[0].get("price")
-        image_src = None
+        image_src = ""
         if product.get("images"):
-            image_src = product.get("images")[0].get("src")
+            image_src = product.get("images")[0].get("src", "")
         simplified_products.append({
             "name": product_name,
             "price": price,

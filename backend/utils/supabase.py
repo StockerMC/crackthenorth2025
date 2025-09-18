@@ -15,7 +15,7 @@ class SupabaseClient:
     def __init__(self):
         load_dotenv()
         self.url = os.getenv("SUPABASE_URL")
-        self.key = os.getenv("NEXT_PUBLIC_SUPABASE_ANON_KEY")
+        self.key = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
 
         if not self.url or not self.key:
             raise ValueError("Missing Supabase URL or Key in environment variables")

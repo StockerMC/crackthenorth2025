@@ -6,6 +6,7 @@ from datetime import datetime, timedelta, timezone
 from dotenv import load_dotenv
 import traceback
 from typing import Optional
+import asyncio
 
 load_dotenv()
 
@@ -32,7 +33,8 @@ async def fetch_top_shorts(keyword: str, max_results: int = 10, relevance_langua
         request_params["regionCode"] = region_code
 
     request = youtube.search().list(**request_params)
-    response = request.execute()
+    loop = asyncio.get_event_loop()
+    response = await loop.run_in_executor(None, request.execute)
 
     videos = []
     for item in response.get("items", []):
