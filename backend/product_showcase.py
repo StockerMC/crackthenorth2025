@@ -2,7 +2,6 @@ from google import genai
 from PIL import Image
 from io import BytesIO
 import requests
-from utils.emails import send_email
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -60,7 +59,7 @@ def create_product_grid(image_urls: list[str]) -> list[Image.Image]:
 
     return images
 
-def gen_showcase_image(prompt, ref_images: list[str]) -> BytesIO: # list of shopify image URLs
+def gen_showcase_image(prompt, ref_images: list[str]) -> BytesIO | None: # list of shopify image URLs
     # Create composite grid images from all reference images
     composite_images = create_product_grid(ref_images)
     
@@ -80,7 +79,7 @@ def gen_showcase_image(prompt, ref_images: list[str]) -> BytesIO: # list of shop
             image_data = BytesIO(part.inline_data.data)
             return image_data
 
-def gen_showcase_image_from_products(prompt, products: list[dict]) -> BytesIO:
+def gen_showcase_image_from_products(prompt, products: list[dict]) -> BytesIO | None:
     image_urls = [p["image"] for p in products if p.get("image")]
     # No limit needed since we're creating a composite image
     return gen_showcase_image(prompt, image_urls)

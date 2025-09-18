@@ -8,7 +8,6 @@ from utils.supabase import SupabaseClient
 import product_showcase as ps
 from utils.video import parse_video
 import json as json_lib
-from utils.emails import send_email
 
 app = Application()
 
@@ -21,7 +20,7 @@ app.use_cors(
 )
 
 # Global SupabaseClient instance
-supabase_client = None
+supabase_client: SupabaseClient | None = None
 
 @app.on_start
 async def on_start(application: Application):
@@ -163,7 +162,7 @@ async def get_products(request: Request):
         
         # Query vector database to get products
         results = vectordb.index.query(
-            vector=[0] * 1024,  # Dummy vector to get all results
+            vector=[0.0] * 1024,  # Dummy vector to get all results
             top_k=min(limit, 100),  # Pinecone has limits
             include_metadata=True
         )
@@ -277,6 +276,8 @@ async def update_comment(request: Request):
 @post("/create-showcase")
 async def create_showcase(request: Request):
     try:
+        assert supabase_client
+
         data = await request.json()
 
         query = await parse_video(data["url"])
@@ -307,26 +308,3 @@ async def get_channel_email_endpoint(channel_id: str):
             return json({"error": "Email not found in channel description"}, status=404)
     except Exception as e:
         return json({"error": str(e)}, status=500)
-
-@post("/channel/send_email")
-async def send_email_to_channel(request: Request):
-    try:
-        data = await request.json()
-        channel_id = data.get("channel_id")
-        subject = data.get("subject")
-        body = data.get("body")
-        
-        if not channel_id or not subject or not body:
-            return json({"error": "channel_id, subject, and body are required"}, status=400)
-        
-        email = await yt_search.get_channel_email(channel_id)
-        if email is None:
-            return json({"error": "Email not found for the given channel_id"}, status=404)
-
-        send_email(subject, body, email)
-        
-        return json({"message": f"Email sent successfully to {email}"})
-        
-    except Exception as e:
-        print(f"Error sending email: {str(e)}")
-        return json({"error": "Failed to send email"}, status=500)

@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
 
     const { data, error } = await supabaseAdmin
       .from("companies")
-      .insert([{ shop_name, access_token }])
+      .insert([{ shop_name, access_token, ingested: false }])
       .select()
       .single();
 
@@ -62,6 +62,18 @@ export async function POST(req: NextRequest) {
       },
       body: JSON.stringify({ shop_url: shop_name, access_token }),
     });
+
+    const { data: updatedCompany, error: updateError } = await supabaseAdmin
+      .from("companies")
+      .update({ ingested: true })
+      .eq("shop_name", shop_name)
+      .select()
+      .single();
+
+    if (updateError) {
+      console.error("Error updating company ingestion status:", updateError);
+      return NextResponse.json({ error: "Failed to update company status." }, { status: 500 });
+    }
 
     if (!response.ok) {
       console.error("Error connecting to backend:", response.statusText);

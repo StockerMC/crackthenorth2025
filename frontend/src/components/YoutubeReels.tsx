@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Carousel, CarouselContent, CarouselItem } from "./ui/carousel";
 import { supabase } from "@/lib/supabase";
+import toast from 'react-hot-toast';
 
 interface ReelData {
     id: string;
@@ -56,7 +57,19 @@ export default function YouTubeReels({ reelsData, className }: YouTubeReelsProps
         }
     };
 
-    const handleInitiatePartnership = async (reel: ReelData, index: number) => {
+    const handleInitiatePartnership = async (reel: ReelData, index: number) => {        
+        toast.success(
+            `📧 Partnership email sent to the creator with instructions!`,
+            {
+                duration: 6000,
+                position: 'top-center',
+                style: {
+                    maxWidth: '500px',
+                    whiteSpace: 'pre-line',
+                },
+            }
+        );
+
         // Instantly remove from local state for better UX
         const newReelsList = reelsList.filter((_, i) => i !== index);
         setReelsList(newReelsList);
@@ -78,6 +91,9 @@ export default function YouTubeReels({ reelsData, className }: YouTubeReelsProps
             });
         } catch (error) {
             console.error("Error initiating partnership:", error);
+            toast.error("Failed to send partnership email. Please try again.", {
+                position: 'top-center'
+            });
         }
     };
 

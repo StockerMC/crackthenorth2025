@@ -29,100 +29,101 @@ async def evaluate_video(short: dict, client: SupabaseClient) -> bool:
             store[p["vendor"]]["images"].append(p["image"])
 
         await asyncio.gather(*[client.post_yt_row(key, short_url, value["images"], value["titles"], short["short_id"], short["email"], short["channel_id"]) for key, value in store.items()])
+    return True
 
-async def test_youtube_comments(channel_id: str, video_id: str) -> None:
-    """Test the YouTube comments functionality with a given channel and video."""
-    try:
-        # 1. Get existing comments
-        print("\n1. Fetching existing comments...")
-        comments = await get_comments(channel_id, video_id, max_results=5)
-        print(f"Found {len(comments)} comments")
-        for comment in comments:
-            author = str(comment.get('authorDisplayName', 'Unknown'))
-            text = str(comment.get('text', ''))[:50]
-            print(f"- {author}: {text}...")
+# async def test_youtube_comments(channel_id: str, video_id: str) -> None:
+#     """Test the YouTube comments functionality with a given channel and video."""
+#     try:
+#         # 1. Get existing comments
+#         print("\n1. Fetching existing comments...")
+#         comments = await get_comments(channel_id, video_id, max_results=5)
+#         print(f"Found {len(comments)} comments")
+#         for comment in comments:
+#             author = str(comment.get('authorDisplayName', 'Unknown'))
+#             text = str(comment.get('text', ''))[:50]
+#             print(f"- {author}: {text}...")
 
-        # 2. Create a new comment
-        print("\n2. Creating a new comment...")
-        new_comment = await create_comment(
-            channel_id=channel_id,
-            video_id=video_id,
-            text="This is a test comment from our API! 🚀"
-        )
-        comment_id = str(new_comment.get('id'))
-        print(f"Created comment with ID: {comment_id}")
+#         # 2. Create a new comment
+#         print("\n2. Creating a new comment...")
+#         new_comment = await create_comment(
+#             channel_id=channel_id,
+#             video_id=video_id,
+#             text="This is a test comment from our API! 🚀"
+#         )
+#         comment_id = str(new_comment.get('id'))
+#         print(f"Created comment with ID: {comment_id}")
 
-        import time
+#         import time
 
-        time.sleep(10)
+#         time.sleep(10)
 
-        # 3. Update the comment
-        print("\n3. Updating the comment...")
-        updated_comment = await update_comment(
-            channel_id=channel_id,
-            comment_id=comment_id,
-            new_text="This is an updated test comment! ✨",
-            video_id=video_id  # Pass video_id for creating if comment doesn't exist
-        )
-        print(f"Updated comment text: {updated_comment.get('text')}")
+#         # 3. Update the comment
+#         print("\n3. Updating the comment...")
+#         updated_comment = await update_comment(
+#             channel_id=channel_id,
+#             comment_id=comment_id,
+#             new_text="This is an updated test comment! ✨",
+#             video_id=video_id  # Pass video_id for creating if comment doesn't exist
+#         )
+#         print(f"Updated comment text: {updated_comment.get('text')}")
 
-        time.sleep(10)
+#         time.sleep(10)
 
-        # 4. Delete the comment
-        print("\n4. Deleting the test comment...")
-        await delete_comment(channel_id, comment_id)
-        print("Comment deleted successfully")
+#         # 4. Delete the comment
+#         print("\n4. Deleting the test comment...")
+#         await delete_comment(channel_id, comment_id)
+#         print("Comment deleted successfully")
 
-    except Exception as e:
-        print(f"❌ Error during testing: {str(e)}")
-        raise
+#     except Exception as e:
+#         print(f"❌ Error during testing: {str(e)}")
+#         raise
 
-async def test_youtube_comments(channel_id: str, video_id: str) -> None:
-    """Test the YouTube comments functionality with a given channel and video."""
-    try:
-        # 1. Get existing comments
-        print("\n1. Fetching existing comments...")
-        comments = await get_comments(channel_id, video_id, max_results=5)
-        print(f"Found {len(comments)} comments")
-        for comment in comments:
-            author = str(comment.get('authorDisplayName', 'Unknown'))
-            text = str(comment.get('text', ''))[:50]
-            print(f"- {author}: {text}...")
+# async def test_youtube_comments(channel_id: str, video_id: str) -> None:
+#     """Test the YouTube comments functionality with a given channel and video."""
+#     try:
+#         # 1. Get existing comments
+#         print("\n1. Fetching existing comments...")
+#         comments = await get_comments(channel_id, video_id, max_results=5)
+#         print(f"Found {len(comments)} comments")
+#         for comment in comments:
+#             author = str(comment.get('authorDisplayName', 'Unknown'))
+#             text = str(comment.get('text', ''))[:50]
+#             print(f"- {author}: {text}...")
 
-        # 2. Create a new comment
-        print("\n2. Creating a new comment...")
-        new_comment = await create_comment(
-            channel_id=channel_id,
-            video_id=video_id,
-            text="This is a test comment from our API! 🚀"
-        )
-        comment_id = str(new_comment.get('id'))
-        print(f"Created comment with ID: {comment_id}")
+#         # 2. Create a new comment
+#         print("\n2. Creating a new comment...")
+#         new_comment = await create_comment(
+#             channel_id=channel_id,
+#             video_id=video_id,
+#             text="This is a test comment from our API! 🚀"
+#         )
+#         comment_id = str(new_comment.get('id'))
+#         print(f"Created comment with ID: {comment_id}")
 
-        import time
+#         import time
 
-        time.sleep(10)
+#         time.sleep(10)
 
-        # 3. Update the comment
-        print("\n3. Updating the comment...")
-        updated_comment = await update_comment(
-            channel_id=channel_id,
-            comment_id=comment_id,
-            new_text="This is an updated test comment! ✨",
-            video_id=video_id  # Pass video_id for creating if comment doesn't exist
-        )
-        print(f"Updated comment text: {updated_comment.get('text')}")
+#         # 3. Update the comment
+#         print("\n3. Updating the comment...")
+#         updated_comment = await update_comment(
+#             channel_id=channel_id,
+#             comment_id=comment_id,
+#             new_text="This is an updated test comment! ✨",
+#             video_id=video_id  # Pass video_id for creating if comment doesn't exist
+#         )
+#         print(f"Updated comment text: {updated_comment.get('text')}")
 
-        time.sleep(10)
+#         time.sleep(10)
 
-        # 4. Delete the comment
-        print("\n4. Deleting the test comment...")
-        await delete_comment(channel_id, comment_id)
-        print("Comment deleted successfully")
+#         # 4. Delete the comment
+#         print("\n4. Deleting the test comment...")
+#         await delete_comment(channel_id, comment_id)
+#         print("Comment deleted successfully")
 
-    except Exception as e:
-        print(f"❌ Error during testing: {str(e)}")
-        raise
+#     except Exception as e:
+#         print(f"❌ Error during testing: {str(e)}")
+#         raise
 
 async def main():
     """Main function to run the service worker."""
@@ -131,7 +132,7 @@ async def main():
     # Check for required environment variables
     required_vars = [
         "SUPABASE_URL",
-        "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+        "SUPABASE_SERVICE_ROLE_KEY",
         "GOOGLE_CLIENT_ID",
         "GOOGLE_CLIENT_SECRET"
     ]
@@ -142,7 +143,7 @@ async def main():
     # Check for required environment variables
     required_vars = [
         "SUPABASE_URL",
-        "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+        "SUPABASE_SERVICE_ROLE_KEY",
         "GOOGLE_CLIENT_ID",
         "GOOGLE_CLIENT_SECRET"
     ]
@@ -153,11 +154,13 @@ async def main():
 
     # Initialize Supabase client
     supabase_url = str(os.getenv("SUPABASE_URL"))
-    supabase_key = str(os.getenv("NEXT_PUBLIC_SUPABASE_ANON_KEY"))
+    supabase_key = str(os.getenv("SUPABASE_SERVICE_ROLE_KEY"))
     client = await SupabaseClient.from_client(await acreate_client(
         supabase_url,
         supabase_key
     ))
+
+    # Loop through all the companies stored in our database
 
     shorts = await fetch_top_shorts("matcha")
     print(shorts)
