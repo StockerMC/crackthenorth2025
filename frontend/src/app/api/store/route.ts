@@ -37,6 +37,18 @@ export async function POST(req: NextRequest) {
           return NextResponse.json({ error: "Failed to connect store." }, { status: 500 });
         }
 
+        const { data: updatedCompany, error: updateError } = await supabaseAdmin
+          .from("companies")
+          .update({ ingested: true })
+          .eq("shop_name", shop_name)
+          .select()
+          .single();
+
+        if (updateError) {
+          console.error("Error updating company ingestion status:", updateError);
+          return NextResponse.json({ error: "Failed to update company status." }, { status: 500 });
+        }
+
         return NextResponse.json({ message: "Store connected successfully", data: existingCompany }, { status: 200 });
       }
     }
